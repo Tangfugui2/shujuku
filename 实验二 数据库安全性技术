@@ -1,0 +1,109 @@
+实验二 数据库安全性技术
+           
+【实验目的】 
+1、理解安全性的概念。 
+2、理解用户的相关概念。 
+3、掌握MySQL的安全性技术，系统权限及对象权限的授予和回收方法。
+【实验性质】 
+综合性实验 
+【实验学时】
+2H
+【实验内容】 
+今有两个关系模式：
+部门（部门号，名称，经理名，地址，电话号）
+	职工（职工号，姓名，年龄，职务，工资，部门号）
+1、创建数据库demo，并根据以上关系模式创建部门和职工表，每个表各插入2条测试数据。(15分)
+
+ 
+create table dept
+(
+dno char(4),
+dname varchar(20),
+dmanager varchar(8),
+address varchar(50),
+phone varchar(20)
+);
+ 
+
+create table emp
+(
+eno char(4),
+ename varchar(20),
+age int,
+djob varchar(8),
+salary int,
+dno varchar(20)
+);
+
+ 
+insert into dept values('1001','人事部','小沈','湖北汽车工业学院','8238787');
+insert into dept values('1002','销售部','小黑','湖北汽车工业学院','8238788');
+
+insert into emp values('0001','沈文羿1',30,'人事处长',5000,'1001');
+insert into emp values('0002','沈文羿2',30,'销售经理',3000,'1002');
+ 
+
+
+2、定义用户，用SQL的GRANT和REVOKE语句完成以下授权定义或存取控制功能。
+⑴ 创建数据库本地用户test，密码为1234。用户test对两个表具有SELECT的权力。(15分)
+
+create user 'test1'@'localhost' identified by '1234';
+ 
+grant select on demo.dept to 'test1'@'localhost';
+grant select on demo.emp to 'test1'@'localhost';
+
+revoke select on demo.dept from 'test1'@'localhost';
+revoke select on demo.emp from 'test1'@'localhost';
+
+⑵ 用户王明对职工和部门表有INSERT和DELETE权力。(15分)
+-- 创建本地用户王明 
+create user '王明1'@'localhost' identified by '1234';
+
+grant insert,delete,select  on demo.dept to '王明1'@'localhost';
+grant insert,delete,select  on demo.emp to '王明1'@'localhost';
+
+revoke select,insert,delete on demo.dept from '王明1'@'localhost';
+revoke select,insert,delete on demo.emp from '王明1'@'localhost';
+
+⑶ 用户李勇对职工表有SELECT权力，对工资字段具有更新权力。(15分)
+ create user '李勇'@'localhost' identified by '1234';
+ 
+grant select,update(salary) on demo.emp to '李勇'@'localhost';
+
+revoke select,update(salary) on demo.emp from '李勇'@'localhost';
+
+
+⑷ 用户周平具有对两个表所有权力(读、插、改、删数据)，并具有给其他用户授权的权力。
+提示：所有权力为ALL PRIVILEGES，在GRANT语句中使用WITH GRANT OPTION选项，被授权的用户就具有了再次将对象权限授予其他用户的能力。(15分)
+
+create user '周平'@'localhost' identified by '1234';
+
+grant all privileges on demo.dept to '周平'@'localhost' with grant option;
+grant all privileges on demo.emp to '周平'@'localhost' with grant option;
+
+revoke all privileges on demo.dept from'周平'@'localhost';
+revoke all privileges on demo.emp from'周平'@'localhost';
+
+
+3、用户杨兰具有从每个部门职工中SELECT最高工资，最低工资，平均工资的权力，他不能查看每个人的工资。提示：首先创建视图查询每个部门职工中的最高工资，最低工资和平均工资，然后授予用户查询视图的权限。(20分)
+create user '杨兰'@'localhost' identified by '1234';
+
+create view v_sal  
+as select dept.dname,max(salary),min(salary),avg(salary) from emp,dept
+where dept.dno=emp.dno group by emp.dno;
+ 
+grant select on demo.v_sal to '杨兰'@'localhost';
+
+revoke select on demo.v_sal from '杨兰'@'localhost';
+【实验总结】 
+请根据实验内容谈谈你对本次实验的收获、感想，或提出你对实验内容的建议等等。(5分)
+答： 通过本次实验我学会了创建其他用户并授予一定访问数据库权力的知识，意识到数据库安全的重要性。
+
+
+
+
+批改教师评语：	
+实验报告成绩：	
+批改教师签字	
+批改时间：	
+
