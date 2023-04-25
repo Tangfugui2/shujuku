@@ -1,0 +1,189 @@
+实验三 数据库完整性技术
+             
+【实验目的】 
+1、掌握完整性的概念；
+2、熟悉MySQL的完整性技术。
+3、了解MySQL的违反完整性处理措施。 
+【实验性质】 
+验证性实验 
+【实验学时】
+2H
+【实验内容】 
+写出完整、详尽的SQL语句，根据实验记录结果并总结。(空位不够请自行续页)
+一、定义完整性。(5分)
+/*创建表s、p、j、spj*/
+定义s表； sno主码，sname非空、city缺省值
+定义p表； pno主码，pname非空、color只能取红、蓝、绿
+定义j表； jno主码， jname非空
+定义spj表； (sno,pno,jno)主码，参照sno、pno、jno外码
+
+创建s表
+create table s(
+sno char(2) primary key,
+sname varchar(10) not null,
+city varchar(5) default'天津'
+)
+ 
+创建p表
+ 
+create table p(
+pno char(2) primary key,
+pname varchar(10) not null,
+color enum('红','蓝','绿'),
+weight int
+)
+ 
+--创建j表
+ 
+create table j(
+jno char(2) primary key,
+jname varchar(10) not null,
+city varchar(10)
+)
+ 
+--创建spj表
+ 
+create table spj(
+sno char(2),
+pno char(2),
+jno char(2),
+qty int,
+primary key(sno,pno,jno),
+constraint fksno foreign key (sno) references s(sno),
+constraint fkpno foreign key (pno) references p(pno),
+constraint fkjno foreign key (jno) references j(jno)
+)
+
+
+二、插入合乎约束的数据。(5分)
+给s表插入合乎约束的数据
+insert into s(sno,sname,city)
+values('s1','精益','天津'),
+('s2','盛锡','北京'),
+('s3','东方红','北京'),
+('s4','丰泰盛','天津'),
+('s5','为民','上海')
+ 
+给p表插入合乎约束的数据
+insert into p(pno,pname,color,weight)
+values('P1','螺母','红',12),
+('p2','螺栓','绿',17),
+('p3','螺丝刀','蓝',14),
+('p4','螺丝刀','红',14),
+('p5','凸轮','蓝',40),
+('p6','齿轮','红',30)
+ 
+给j表插入合乎约束的数据
+insert into j(jno,jname,city)
+values('j1','三建','北京'),
+('j2','一汽','长春'),
+('j3','弹簧厂','天津'),
+('j4','造船厂','天津'),
+('j5','机车厂','唐山'),
+('j6','无线电厂','常州'),
+('j7','半导体厂','南京')
+给spj表插入合乎约束的数据
+insert into spj(sno,pno,jno,qty)
+values ('s1','p1','j1',200),
+('s1','p1','j3',100),
+('s1','p1','j4',700),
+('s1','p2','j2',100),
+('s2','p3','j1',400),
+('s2','p3','j2',200),
+('s2','p3','j4',500),
+('s2','p3','j5',400),
+('s2','p5','j1',400),
+('s2','p5','j2',100),
+('s3','p1','j1',200),
+('s3','p3','j1',200),
+('s4','p5','j1',100),
+('s4','p6','j3',300),
+('s4','p6','j4',200),
+('s5','p2','j4',100),
+('s5','p3','j1',200),
+('s5','p6','j2',200),
+('s5','p6','j4',500)
+三、设计相关实验用例数据。(共60分，每题5分)
+1、针对下列情况，如果出错的话，说明出错原因；不出错的话，观察数据运行结果。
+（1）插入违反约束的元组，主码为null值
+insert into s(sno,sname,city)
+ values(null,'s2','武汉')
+错误，因为主码具有非空性，不能为空
+（2）插入违反约束的元组，主码取重复值
+insert into s(sno,sname,city)
+values('s1','张三','湖北');
+    错误，主码具有唯一性，不能有重复值
+（3）插入违反约束的元组，用户定义完整性（pname非空）
+insert into p(pno,pname,color)
+values('p7',null,'红');
+错误，表设计时，pname定义为非空，所以不能去null
+（4）插入违反约束的元组，用户定义完整性（color只能取红、蓝、绿）
+insert into p(pno,pname,color)
+values('p8','螺丝刀','黄');
+错误，设计时color取值范围为红蓝绿，取黄就报错了
+（5）插入违反约束的元组，外码取null值
+insert into spj(sno,pno,jno,qty)
+values('s1',null,'j1',200);
+错误，外码不能为空，因为这个外码关联的的是p表的主码
+（6）插入违反约束的元组，外码取对应主码没有的值
+insert into spj(sno,pno,jno,qty)
+values('s1','p9','j3',100);
+错误，因为spj的pno是参照p表的pno,所以在取值的时候，也只能取p表中pno存在的值，这里违反了参照完整性
+（7）修改外码值，取对应主码已有的值
+update spj set pno='p2' where sno='s1' and pno='p1' and jno='j3';
+ 正确
+（8）修改外码值，取对应主码没有的值
+update spj set no='s9' where no='s1' and pno='p1' and jno='j3';
+ 正确
+（9）删除被参照表未引用的主码值
+delete from p where pno='p4';
+正确
+（10）删除被参照表引用的主码值
+delete from p where pno='p6';
+错误，未发现相应的主码值 受限修改
+（11）修改被参照表未引用的主码值
+update p set pno='p4' where pno='p8';
+正确
+（12）修改被参照表引用的主码值
+update p  set pno='p9' where pno='p6';
+错误 要插入的数据已经存在 不能重复添加
+
+2、将外码改成级联删除、级联修改。(5分)
+删除原先创建的外码约束
+alter table spj drop foreign key fksnos ;
+alter table spj drop foreign key fkspno ;
+alter table spj drop foreign key  fksjno ;
+
+添加级联删除和级联更新的约束
+alter table spj add constraint fksnos foreign key (sno) references s(sno)on delete cascade on update cascade;
+alter table spj add constraint fkspno foreign key (pno) references p(pno)on delete cascade on update cascade;
+alter table spj add constraint fksjno foreign key (jno) references j(jno)on delete cascade on update cascade;
+
+3、在2的基础上，插入数据。针对下列情况，如果出错的话，给出错误码，并说明原因；不出错的话，观察数据并说明理由。(共20分，每题5分)
+（1）删除被参照表未引用的主码值
+delete from p where pno='p4';
+正确
+
+
+（2）删除被参照表引用的主码值
+delete from p where pno='p6';
+正确
+
+
+（3）修改被参照表未引用的主码值
+update p set pno='p4' where pno='p8';
+正确
+
+
+（4）修改被参照表引用的主码值
+update p set pno='p9' where pno='p6';
+正确
+
+【实验总结】 
+请根据实验内容谈谈你对本次实验的收获、感想，或提出你对实验内容的建议等等。(5分)
+答：本次实验了解MySQL的违反完整性处理措施，并且熟悉MySQL的完整性技术。自己也在实验中了解了一些，希望以后能够运用和判断。
+
+
+
+	
+
