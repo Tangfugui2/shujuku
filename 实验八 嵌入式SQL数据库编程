@@ -1,0 +1,56 @@
+实验八 嵌入式SQL数据库编程
+         
+【实验目的】 
+1、了解嵌入式SQL概念。
+2、掌握嵌入式SQL数据库编程过程尤其连接数据库、表现数据库。
+【实验性质】 
+综合性实验
+【实验学时】
+2H
+【实验内容】 
+1、用自己熟悉的语言（建议C）通过嵌入式SQL完成对Oracle数据库单表的查询、插入、删除、修改数据。
+2、给出主要代码并注释。
+  答：代码：
+public class Test {
+	public static void main(String[] args) {
+		Connection conn = null; //连接数据库的接口
+		PreparedStatement psmt = null;//预编译对象
+		ResultSet rs = null; //结果集
+		String driver = "oracle.jdbc.driver.OracleDriver"; //驱动程序地址
+		String url = "jdbc:oracle:thin:@localhost:1521:xe"; //要连接的数据库地址
+		String user = "hr"; //连接的数据库用户名
+		String password = "oracle"; //数据库登录密码
+		try {
+			Class.forName(driver);//实例化驱动程序
+			conn = DriverManager.getConnection(url, user, password);//调用驱动程序的方法，并把结果返回给conn
+			//查询操作
+			psmt = conn.prepareStatement("select * from student"); //调用方法发送sql语句
+			rs = psmt.executeQuery();//执行select需调用executeQuery()方法返回结果
+			while(rs.next()) {//遍历结果集
+				//打印结果的内容
+				System.out.println(rs.getString("id") + "-" + rs.getString("name") + "-" +
+						rs.getString("classes") + "-" + rs.getString("sex"));
+			}	
+				//插入操作
+			psmt = conn.prepareStatement("insert into student values(?,?,?,?)");
+			//传递参数
+			psmt.setString(1, "105");
+			psmt.setString(2, "小绿");
+			psmt.setString(3, "计算机171");
+			psmt.setString(4, "女");
+			int n = psmt.executeUpdate();
+			if(n>0) {
+				System.out.println("插入成功");
+			} else {
+			System.out.println("插入失败");
+			}
+}}
+【实验总结】 
+请根据实验内容谈谈你对本次实验的收获、感想，或提出你对实验内容的建议等等。
+答： 在嵌入式SQL中，为了能够快速区分SQL语句与主语言语句，所有SQL语句都必须加上前缀，不同的主语言前缀可能有所不同。通过本次实验，我对嵌入式SQ有了进一步的了解，并学会了嵌入式SQL数据库编程过程尤其连接数据库、表现数据库。
+批改教师评语：	
+
+实验报告成绩：	
+批改教师签字	
+批改时间：	
+

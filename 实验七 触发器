@@ -1,0 +1,120 @@
+
+实验七 触发器
+          
+【实验目的】 
+1、理解触发器基本概念。
+2、掌握Oracle触发器定义及其触发。
+3、了解触发器调试。
+4、理解触发器作用。 
+【实验性质】 
+综合性实验 
+【实验学时】
+2H
+【实验内容】 
+1、	定义一个触发器，完成及时计算所有供应商供应零件总数量（其中S表增加一列供应零件总数量sqty默认值为0）。(15分)
+create or replace trigger tr_1
+after insert or delete or update on spj
+declare
+ cursor cur_spj is select sno,sum(qty)sumqty from spj group by sno;
+begin
+  for ret in cur_spj loop
+    update s set sqty=ret.sumqty where sno=ret.sno;
+  end loop;
+end;
+--更新，删除，插入时触发
+update spj set qty=300 where sno='S1' and pno='P1' and jno='J1' 
+2、定义触发器，实现实体完整性（以s表供应商代码sno为例）。(20分)
+提示：触发器编写时应考虑主码取null值和主码重复两种情况。
+create or replace trigger tr_2
+after insert on s
+declare
+ v_count number;
+begin
+ select count(*) into v_count from s where sno is null;
+ if(v_count>0) then
+    raise_application_error(-20001,'主码取null，不合法');
+  end if;
+  select count(*) into v_count from s group by sno having count(*)>1;
+  if SQL%FOUND then
+    raise_application_error(-20002,'主码重复，不合法');
+  end if;
+end;
+--插入sno为空或者重复时触发
+insert into s(sno,sname,status,city) values(null,'竟仪',20,'天津');
+3、定义触发器，实现参照完整性（以spj表供应商代码sno参照s表供应商代码sno为例）。(60分)
+提示：分以下四种情况考虑，分别编写行级触发器实现。
+⑴ 当在SPJ表插入数据时，如果S,P,J表不存在相应的记录时抛出异常
+create or replace trigger tr_3_1
+before insert on spj
+for each row
+declare
+   v_count number;
+begin
+  select count(*) into v_count from spj where sno=:new.sno;
+  if(v_count<1) then
+     raise_application_error(-20001,'供应商编号不存在');
+  end if;
+select count(*) into v_count from spj where pno=:new.pno;
+  if(v_count<1) then
+     raise_application_error(-20001,'供应商编号不存在');
+  end if;
+  select count(*) into v_count from spj where jno=:new.jno;
+  if(v_count<1) then
+     raise_application_error(-20001,'供应商编号不存在');
+  end if;  
+end;
+select * from s;
+--插入不存在供应商编号时触发
+insert into spj values('S6','P1','J1',200);
+
+
+⑵ 当删除或更新S表记录时，当SPJ表上有引用时抛出异常
+create or replace trigger tr_3_2
+before delete or update on s
+for each row
+declare
+   v_count number;
+begin select count(*) into v_count from spj where sno=:old.sno;
+  if(v_count>1) then
+      raise_application_error(-20002,'在spj表中有引用，不能删除或更新');
+  end if;
+end;
+--删除或者更新时在spj表中有引用会触发
+update s set sno='S9' where sno='S1'
+
+⑶ 级联删除,删除S表中的记录时，同时删除SPJ表中的记录
+create or replace trigger tr_3_3
+before delete on s
+for each row
+declare
+begin
+  delete from spj where sno=:old.sno;
+end;
+--执行删除操作时触发
+delete  from s where sno='S1'
+⑷ 级联更新，更新S表中的SNO时，同时更新SPJ表中的SNO记录
+create or replace trigger tr_3_4
+before update of sno on s 
+for each row
+declare
+begin
+   update spj set sno=:new.sno where sno=:old.sno;
+end;
+--执行更新操作时触发
+update s set sno='S1' where sno='S5'
+【实验总结】 
+请根据实验内容谈谈你对本次实验的收获、感想，或提出你对实验内容的建议等等。(5分)
+通过本次实验，我理解了触发器基本概念，基本掌握Oracle触发器定义及其触发。
+对于了解触发器调试还是一直半解，还需要加强练习，了解了理解触发器作用。 定义触发器，级联更新，删除等。
+
+
+
+
+
+
+批改教师评语：	
+
+实验报告成绩：	
+批改教师签字	
+批改时间：	
+

@@ -1,0 +1,103 @@
+实验六 存储过程
+           
+【实验目的】 
+1、理解存储过程基本概念。
+2、掌握MySQL存储过程与函数定义、调用、删除。
+3、了解存储过程。
+4、理解存储过程作用。 
+【实验性质】 
+综合性实验 
+【实验学时】
+2H
+【实验内容】 
+1、定义、调用简单存储过程：计算所有供应商供应零件总数量并修改供应商相关列sqty（其中S表增加一列供应零件总数量sqty默认值为0）。(20分)
+DROP PROCEDURE proc_1;
+CREATE PROCEDURE proc_1()
+BEGIN 
+  UPDATE s SET sqty = (SELECT sum(qty) from spj WHERE sno=s.sno);
+END;
+CALL proc_1();
+SELECT *FROM s;
+
+2、定义、调用参数存储过程：查询返回指定供应商的供应零件总数量。(15分)
+CREATE PROCEDURE proc_2(in isno char(2),OUT osqty INT)
+BEGIN
+  SELECT SUM(qty) INTO osqty FROM spj WHERE sno=isno;
+END;
+CALL proc_2('S5',@qty);
+SELECT @qty;
+3、定义、调用存储过程：插入一个供应商信息（所有信息由参数提供）。(20分)
+CREATE PROCEDURE proc insert(
+       p_sno CHAR(2),
+       p_sname VARCHAR(10),
+       p_status INT,
+       p_city VARCHAR(10))
+BEGIN
+  DECLARE v_count INT;
+  SELECT COUNT(*) INTO v_count FROM s WHERE sno=p_sno;
+  IF v_count > 0 THEN
+    SELECT('供应商信息已存在，请重新插入！');
+  ELSEIF v_count = 0 THEN
+    INSERT INTO s(sno,sname,STATUS,city)VALUES(p_sno,p_sname,p_status,p_city);
+    SELECT('数据插入成功！');
+  end IF;
+END;
+CALL proc_insert('S7','华为',20,'中国');
+SELECT *from s;
+4、定义、调用存储过程：删除指定零件代码的供应信息，并返回删除的元组数。(20分)
+CREATE PROCEDURE proc_insert(
+    p_sno CHAR(2),
+    p_sname VARCHAR(10),
+    p_status INT,
+    p_city VARCHAR(10))
+BEGIN
+    DECLARE v_count INT;
+    SELECT COUNT(*) INTO v_count FROM s WHERE sno=p_sno;
+    IF v_count >0 THEN
+    SELECT('信息已存在，插入错误！');
+    ELSEIF v_count = 0 THEN
+    INSERT INTO s(sno,sname,STATUS,city) VALUES(p_sno,p_sname,p_status,p_city);
+    SELECT('信息插入完成！');
+  END IF;
+END;
+
+CALL proc_insert('s8','zss',100,'sss');
+SELECT * FROM s;
+ 
+
+5、定义、调用存储过程：修改指定代码项目的其它信息（所有信息由参数提供）。(20分)
+DROP PROCEDURE proc_update;
+CREATE PROCEDURE proc_update(
+       p_jno CHAR(2),
+       p_jname VARCHAR(10),
+       p_city VARCHAR(10)
+)
+BEGIN
+       DECLARE v_count INT;
+       SELECT COUNT(*) INTO v_count FROM j WHERE jno=p_jno;
+       IF v_count = 0 THEN
+SELECT('项目不存在！');
+       ELSEIF v_count >0 THEN
+       UPDATE j SET jname=p_jname, city=p_city WHERE jno=p_jno;
+SELECT('数据修改成功！');
+       END IF;
+END;
+
+CALL proc_update('j7','半导体厂商','南京');
+SELECT * FROM j;
+
+
+
+【实验总结】 
+请根据实验内容谈谈你对本次实验的收获、感想，或提出你对实验内容的建议等等。(5分)
+掌握MySQL存储过程与函数定义、调用、删除。了解了存储过程，理解存储过程作用。对于定义、调用简单存储过程有了基本的理解与运用。下次可以更加熟练地进行存储过程的运用。
+
+
+
+
+批改教师评语：	
+
+实验报告成绩：	
+批改教师签字	
+批改时间：	
+
