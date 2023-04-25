@@ -1,0 +1,237 @@
+实验一 关系数据库标准语言SQL
+                        
+【实验目的】 
+在给定的关系数据库管理系统MySQL环境下，通过实验学生能够：
+1、MySQL环境的认识及熟悉，了解其对标准SQL的扩充。
+2、掌握MySQL环境下数据定义包括数据库、基本表、视图、索引定义。
+3、掌握MySQL环境下数据操纵包括数据插入、删除、修改。
+4、掌握MySQL环境下数据查询及其各种变化。 
+【实验性质】 
+验证性实验 
+【实验学时】
+4H
+【实验内容】 
+设有一个SPJ数据库，包括S,P,J,SPJ四个关系模式：
+S(SNO,SNAME,STATUS,CITY)
+P(PNO,PNAME,COLOR,WEIGHT)
+J(JNO,JNAME,CITY)
+SPJ(SNO,PNO,JNO,QTY)
+供应商表S由供应商代码(SNO)、供应商姓名(SNAME)、供应商状态(STATUS)、供应商所在城市(CITY)组成；
+零件表P由零件代码(PNO)、零件名(PNAME)、颜色(COLOR)、重量(WEIGHT)组成；
+工程项目表J由工程项目代码(JNO)、工程项目名(JNAME)、工程项目所在城市(CITY)组成；
+供应情况表SPJ由供应商代码(SNO)、零件代码(PNO)、工程项目代码(JNO)、供应数量(QTY)组成，表示某供应商 供应某种零件 给某工程项目的数量为QTY。
+今有若干数据如下：
+S表
+SNO	SNAME	STATUS	CITY
+S1	精益	20	天津
+S2	盛锡	10	北京
+S3	东方红	30	北京
+S4	丰泰盛	20	天津
+S5	为民	30	上海
+
+P表
+PNO	PNAME	COLOR	WEIGHT
+P1	螺母	红	12
+P2	螺栓	绿	17
+P3	螺丝刀	蓝	14
+P4	螺丝刀	红	14
+P5	凸轮	蓝	40
+P6	齿轮	红	30
+
+J表
+JNO	JNAME	CITY
+J1	三建	北京
+J2	一汽	长春
+J3	弹簧厂	天津
+J4	造船厂	天津
+J5	机车厂	唐山
+J6	无线电厂	常州
+J7	半导体厂	南京
+
+SPJ表
+SNO	PNO	JNO	QTY
+S1	P1	J1	200
+S1	P1	J3	100
+S1	P1	J4	700
+S1	P2	J2	100
+S2	P3	J1	400
+S2	P3	J2	200
+S2	P3	J4	500
+S2	P3	J5	400
+S2	P5	J1	400
+S2	P5	J2	100
+S3	P1	J1	200
+S3	P3	J1	200
+S4	P5	J1	100
+S4	P6	J3	300
+S4	P6	J4	200
+S5	P2	J4	100
+S5	P3	J1	200
+S5	P6	J2	200
+S5	P6	J4	500
+请根据以上内容完成下面题目，写出相应的SQL语句。(空位不够请自行续页)
+1、	创建表。(10分)
+ 
+create table s(
+sno char(2),
+sname varchar(10),
+status int,
+city varchar(10)
+);
+
+create table p(
+pno char(2),
+pname varchar(10),
+color char(1),
+weight int
+);
+
+create table j(
+jno char(2),
+jname varchar(10),
+city varchar(10)
+);
+
+create table spj(
+sno char(2),
+pno char(2),
+jno char(2),
+qty int
+);
+ 
+
+
+2、插入数据。(5分)
+insert into s values('S1','竟仪',20,'天津'),
+('S2','盛锡',10,'北京'),
+('S3','东方红',30,'北京'),
+('S4','丰泰盛',20,'天津'),
+('S5','为民',30,'上海');
+
+insert into p values
+('P1','螺母','红',12),
+('P2','螺栓','绿',17),
+('P3','螺丝刀','蓝',14),
+('P4','螺丝刀','红',14),
+('P5','凸轮','蓝',40),
+('P6','齿轮','红',30);
+
+insert into j values
+('J1','三建','北京'),
+('J2','一汽','长春'),
+('J3','弹簧厂','天津'),
+('J4','造船厂','天津'),
+('J5','机车厂','唐山'),
+('J6','无线电厂','常州'),
+('J7','半导体厂','南京');
+
+insert into spj values
+('S1','P1','J1',200),
+('S1','P1','J3',100),
+('S1','P1','J4',700),
+('S1','P2','J2',100),
+('S2','P3','J1',400),
+('S2','P3','J2',200),
+('S2','P3','J4',500),
+('S2','P3','J5',400),
+('S2','P5','J1',400),
+('S2','P5','J2',100),
+('S3','P1','J1',200),
+('S3','P3','J1',200),
+('S4','P5','J1',100),
+('S4','P6','J3',300),
+('S4','P6','J4',200),
+('S5','P2','J4',100),
+('S5','P3','J1',200),
+('S5','P6','J2',200),
+('S5','P6','J4',500);
+
+
+
+
+
+3、	请用SQL语句完成下面题目的查询。(共50分，每题5分)
+(1)	找出所有供应商的姓名和所在城市。
+
+select sname,city from s;
+
+(2)	求供应工程J1零件P1的供应商号码SNO。
+
+select sno from spj where jno='J1'and pno='P1'; 
+
+(3)	求供应工程J1零件为红色的供应商号码SNO。
+
+select distinct sno from spj,p where spj.pno=p.pno and jno='J1'and color='红';
+select sno from spj where jno='J1'and pno in (select pno from p where color='红'); 
+select distinct sno from spj natural join p where p.color='红'and jno='J1'; 
+
+(4)	找出工程项目J2使用的各种零件的名称及其数量。
+
+select pname,qty from spj,p where p.pno=spj.pno and spj.jno='J2';
+select pname,qty from p inner join spj on p.pno=spj.pno where spj.jno='J2';
+
+(5)	找出使用上海产的零件的工程名称。
+
+select distinct jname from j inner join spj on j.jno=spj.jno inner join s on spj.sno=s.sno where s.city='上海';
+
+(6)	求没有使用天津供应商生产的红色零件的工程号JNO。
+
+select distinct jno from spj where jno not in
+(select jno from spj natural join s natural join p where s.city='天津' and p.color='红');
+
+(7)	把全部红色零件的颜色改成蓝色。
+
+update p set color='蓝' where color='红';
+
+(8)	由S5供给J4的零件P6改为由S3供应。
+
+update spj set sno='S3' where sno ='S5'and jno='J4'and pno='P6';
+
+(9)	从供应商关系中删除供应商号是S2的记录，并从供应情况关系中删除相应的记录。
+
+delect from s where sno ='S2'
+delect from spj where sno='S2';
+
+(10)	请将(S2，J6，P4，200)插入供应情况关系。
+
+select * from spj;
+insert into spj(sno,jno,pno,qty) values('S2','J6','P4',200);
+
+
+4、	请为三建工程项目建立一个供应情况的视图，包括供应商代码(SNO)、零件代码(PNO)、供应数量(QTY)。(10分)
+
+select * from v1;
+create view v1 as select sno,spj.pno,qty from spj,j where spj.jno=j.jno and j.jname='三建';
+
+
+
+针对该视图完成下列查询：
+(1)	找出三建工程项目使用的各种零件代码及其数量。(5分)
+
+select pno,qty from v1;
+
+(2)	找出供应商S1的供应情况。(5分)
+
+select * from v1 where sno ='S1';
+
+5、在表SPJ定义索引IDX_SPJ，包括（SNO,PNO,JNO）。比较定义索引前后求供应工程J1零件P1的供应商号码SNO的区别。(10分)
+
+create index ind_spj on spj(sno,pno,jno);
+
+select sno from spj where jno='J1'and pno='P1';
+
+
+【实验总结】 
+请根据实验内容谈谈你对本次实验的收获、感想，或提出你对实验内容的建议等等。(5分)
+通过本次实验我学会了数据库的建立连接，基本的增删改查，建立索引，明白了自然连接和内连接。
+
+
+
+
+
+批改教师评语：	
+
+实验报告成绩：	
+批改教师签字	
+批改时间：	
+
